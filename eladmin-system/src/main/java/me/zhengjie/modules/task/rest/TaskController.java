@@ -79,7 +79,7 @@ public class TaskController {
     @Log("下架任务")
     @ApiOperation("下架任务")
     @PreAuthorize("@el.check('task:close')")
-    @PutMapping
+    @PostMapping("close")
     public ResponseEntity<Object> close(@RequestBody String id) {
         taskService.close(id);
         return new ResponseEntity<>(HttpStatus.OK);

@@ -15,6 +15,8 @@ import org.springframework.web.client.RestTemplate;
 
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
+import lombok.extern.slf4j.Slf4j;
+
 // 默认不使用缓存
 //import org.springframework.cache.annotation.CacheConfig;
 //import org.springframework.cache.annotation.CacheEvict;
@@ -38,6 +40,7 @@ import java.util.LinkedHashMap;
 @Service
 //@CacheConfig(cacheNames = "task")
 @Transactional(propagation = Propagation.SUPPORTS, readOnly = true, rollbackFor = Exception.class)
+@Slf4j
 public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
@@ -131,6 +134,7 @@ public class TaskServiceImpl implements TaskService {
 
 	@Override
 	public void close(String id) {
+		log.info("taskClose:{}" , id);
 		Map<String, String> map = new HashMap<>();
 		map.put("taskId", id);
 		String res = restTemplate.postForObject("http://vmake-provider/eureka/test", map , String.class);
