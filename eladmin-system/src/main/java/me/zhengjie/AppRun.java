@@ -10,6 +10,8 @@ import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactor
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -21,7 +23,8 @@ import org.springframework.web.client.RestTemplate;
  * @author Zheng Jie
  * @date 2018/11/15 9:20:19
  */
-@EnableDiscoveryClient   //开启发现服务
+@EnableDiscoveryClient
+@EnableFeignClients
 @EnableAsync
 @RestController
 @SpringBootApplication
@@ -44,19 +47,19 @@ public class AppRun {
         return fa;
     }
 
-    @LoadBalanced
-    @Bean
-    public RestTemplate restTemplate(){
-        return new RestTemplate();
-    }
-
-    /**
-     * 访问首页提示
-     * @return /
-     */
-    @GetMapping("/")
-    @AnonymousAccess
-    public String index() {
-        return restTemplate().getForObject("http://vmake-provider/eureka/test", String.class);
-    }
+//    @LoadBalanced
+//    @Bean
+//    public RestTemplate restTemplate(){
+//        return new RestTemplate();
+//    }
+//
+//    /**
+//     * 访问首页提示
+//     * @return /
+//     */
+//    @GetMapping("/")
+//    @AnonymousAccess
+//    public String index() {
+//        return restTemplate().getForObject("http://vmake-provider/vmake/eureka/test", String.class);
+//    }
 }

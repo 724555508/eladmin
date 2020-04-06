@@ -80,6 +80,6 @@ eureka:
   client:
     #注册地址
     service-url: 
-      defaultZone: http://192.168.11.220:1111/eureka/
+      defaultZone: http://123.57.141.60:1111/eureka/
     fetch-registry: true
     register-with-eureka: true

@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import io.swagger.annotations.*;
 import java.io.IOException;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
@@ -66,22 +67,57 @@ public class TaskController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @Log("删除任务")
-    @ApiOperation("删除任务")
-    @PreAuthorize("@el.check('task:del')")
-    @DeleteMapping
-    public ResponseEntity<Object> deleteAll(@RequestBody Long[] ids) {
-        taskService.deleteAll(ids);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+//    @Log("删除任务")
+//    @ApiOperation("删除任务")
+//    @PreAuthorize("@el.check('task:del')")
+//    @DeleteMapping
+//    public ResponseEntity<Object> deleteAll(@RequestBody Set<Long> ids) {
+//        taskService.deleteAll(ids);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
     
     
     @Log("下架任务")
     @ApiOperation("下架任务")
     @PreAuthorize("@el.check('task:close')")
     @PostMapping("close")
-    public ResponseEntity<Object> close(@RequestBody String id) {
-        taskService.close(id);
+    public ResponseEntity<Object> close(@RequestBody Set<Long> ids) {
+        for (Long id : ids) {
+        	taskService.close(String.valueOf(id));
+		}
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    
+    @Log("上架任务")
+    @ApiOperation("上架任务")
+    @PreAuthorize("@el.check('task:open')")
+    @PostMapping("open")
+    public ResponseEntity<Object> open(@RequestBody Set<Long> ids) {
+        for (Long id : ids) {
+        	taskService.open(String.valueOf(id));
+		}
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    
+    @Log("审核失败任务")
+    @ApiOperation("审核失败任务")
+    @PreAuthorize("@el.check('task:checkFailure')")
+    @PostMapping("checkFailure")
+    public ResponseEntity<Object> checkFailure(@RequestBody Set<Long> ids) {
+        for (Long id : ids) {
+        	taskService.checkFailure(String.valueOf(id));
+		}
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+    
+    @Log("审核成功任务")
+    @ApiOperation("审核成功任务")
+    @PreAuthorize("@el.check('task:checkSuccess')")
+    @PostMapping("checkSuccess")
+    public ResponseEntity<Object> checkSuccess(@RequestBody Set<Long> ids) {
+        for (Long id : ids) {
+        	taskService.checkSuccess(String.valueOf(id));
+		}
         return new ResponseEntity<>(HttpStatus.OK);
     }
     

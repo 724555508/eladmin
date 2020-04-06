@@ -1,5 +1,6 @@
 package me.zhengjie.modules.task.service.impl;
 
+import me.zhengjie.modules.client.TaskClient;
 import me.zhengjie.modules.task.domain.Task;
 import me.zhengjie.utils.ValidationUtil;
 import me.zhengjie.utils.FileUtil;
@@ -28,6 +29,8 @@ import me.zhengjie.utils.QueryHelp;
 import java.util.List;
 import java.util.Map;
 import java.io.IOException;
+
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,12 +50,11 @@ public class TaskServiceImpl implements TaskService {
 
     private final TaskMapper taskMapper;
     
-    private RestTemplate restTemplate;
+    @Resource private TaskClient taskClient;
 
-    public TaskServiceImpl(TaskRepository taskRepository, TaskMapper taskMapper , RestTemplate restTemplate) {
+    public TaskServiceImpl(TaskRepository taskRepository, TaskMapper taskMapper) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
-        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -134,10 +136,21 @@ public class TaskServiceImpl implements TaskService {
 
 	@Override
 	public void close(String id) {
-		log.info("taskClose:{}" , id);
-		Map<String, String> map = new HashMap<>();
-		map.put("taskId", id);
-		String res = restTemplate.postForObject("http://vmake-provider/eureka/test", map , String.class);
-		System.out.println(res);
+		taskClient.taskClose(id);		
+	}
+
+	@Override
+	public void open(String id) {
+		taskClient.taskOpen(id);	
+	}
+
+	@Override
+	public void checkSuccess(String id) {
+		taskClient.checkSuccess(id);
+	}
+
+	@Override
+	public void checkFailure(String id) {
+		taskClient.checkFailure(id);
 	}
 }

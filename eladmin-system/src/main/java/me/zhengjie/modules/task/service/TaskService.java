@@ -66,4 +66,10 @@ public interface TaskService {
     
     
     void close(String id);
+    
+    void open(String id);
+    
+    void checkSuccess(String id);
+    
+    void checkFailure(String id);
 }
