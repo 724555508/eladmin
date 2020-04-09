@@ -147,7 +147,7 @@ public class DeployServiceImpl implements DeployService {
 			if (flag) {
 				sendMsg("停止原来应用", MsgType.INFO);
 				//停止应用
-				stopApp(port, executeShellUtil);
+				stopApp(app.getName(), executeShellUtil);
 				sendMsg("备份原来应用", MsgType.INFO);
 				//备份应用
 				backupApp(executeShellUtil, ip, app.getDeployPath(), app.getName(), app.getBackupPath(), id);
@@ -156,13 +156,14 @@ public class DeployServiceImpl implements DeployService {
 			//部署文件,并启动应用
 			String deployScript = app.getDeployScript();
 			executeShellUtil.execute(deployScript);
+			startApp(app.getName(), executeShellUtil);
 			sleep(3);
 			sendMsg("应用部署中，请耐心等待部署结果，或者稍后手动查看部署状态", MsgType.INFO);
 			int i  = 0;
 			boolean result = false;
 			// 由于启动应用需要时间，所以需要循环获取状态，如果超过30次，则认为是启动失败
 			while (i++ < count){
-				result = checkIsRunningStatus(port, executeShellUtil);
+				result = checkIsRunningStatus(app.getName(), executeShellUtil);
 				if(result){
 					break;
 				}
@@ -196,7 +197,7 @@ public class DeployServiceImpl implements DeployService {
 		if (!fileSavePath.endsWith(FILE_SEPARATOR)) {
 			sb.append(FILE_SEPARATOR);
 		}
-		sb.append(appName).append(" ").append(backupPath);
+		sb.append(appName).append("*").append(" ").append(backupPath);
 		log.info("备份应用脚本:" + sb.toString());
 		executeShellUtil.execute(sb.toString());
 		//还原信息入库
@@ -214,9 +215,32 @@ public class DeployServiceImpl implements DeployService {
 	 * @param port 端口
 	 * @param executeShellUtil /
 	 */
-	private void stopApp(int port, ExecuteShellUtil executeShellUtil) {
+//	private void stopApp(int port, ExecuteShellUtil executeShellUtil) {
+//		//发送停止命令
+//		executeShellUtil.execute(String.format("lsof -i :%d|grep -v \"PID\"|awk '{print \"kill -9\",$2}'|sh", port));
+//
+//	}
+	/**
+	 * 停用APP按docker容器名字
+	 * @param name
+	 * @param executeShellUtil
+	 */
+	private void stopApp(String name, ExecuteShellUtil executeShellUtil) {
 		//发送停止命令
-		executeShellUtil.execute(String.format("lsof -i :%d|grep -v \"PID\"|awk '{print \"kill -9\",$2}'|sh", port));
+		log.info("正在停用docker容器:{}" , name);
+		executeShellUtil.execute(String.format("docker stop %s", name));
+
+	}
+	
+	/**
+	 * 启用APP按docker容器名字
+	 * @param name
+	 * @param executeShellUtil
+	 */
+	private void startApp(String name, ExecuteShellUtil executeShellUtil) {
+		//发送停止命令
+		log.info("正在启用docker容器:{}" , name);
+		executeShellUtil.execute(String.format("docker start %s", name));
 
 	}
 
@@ -227,9 +251,20 @@ public class DeployServiceImpl implements DeployService {
 	 * @param executeShellUtil /
 	 * @return true 正在运行  false 已经停止
 	 */
-	private boolean checkIsRunningStatus(int port, ExecuteShellUtil executeShellUtil) {
-		String result = executeShellUtil.executeForResult(String.format("fuser -n tcp %d", port));
-		return result.indexOf("/tcp:")>0;
+//	private boolean checkIsRunningStatus(int port, ExecuteShellUtil executeShellUtil) {
+//		String result = executeShellUtil.executeForResult(String.format("fuser -n tcp %d", port));
+//		return result.indexOf("/tcp:")>0;
+//	}
+	
+	/**
+	 * 指定docker容器名字是否在运行
+	 * @param name
+	 * @param executeShellUtil
+	 * @return
+	 */
+	private boolean checkIsRunningStatus(String name, ExecuteShellUtil executeShellUtil) {
+		String result = executeShellUtil.executeForResult(String.format("docker inspect --format='{{.State.Running}}' %s", name));
+		return result.indexOf("true")>0;
 	}
 
 	private void sendMsg(String msg, MsgType msgType) {
@@ -248,7 +283,7 @@ public class DeployServiceImpl implements DeployService {
 			StringBuilder sb = new StringBuilder();
 			ExecuteShellUtil executeShellUtil = getExecuteShellUtil(serverDeploy.getIp());
 			sb.append("服务器:").append(serverDeploy.getName()).append("<br>应用:").append(app.getName());
-			boolean result = checkIsRunningStatus(app.getPort(), executeShellUtil);
+			boolean result = checkIsRunningStatus(app.getName(), executeShellUtil);
 			if (result) {
 				sb.append("<br>正在运行");
 				sendMsg(sb.toString(), MsgType.INFO);
@@ -280,17 +315,18 @@ public class DeployServiceImpl implements DeployService {
 			StringBuilder sb = new StringBuilder();
 			ExecuteShellUtil executeShellUtil = getExecuteShellUtil(deploy.getIp());
 			//为了防止重复启动，这里先停止应用
-			stopApp(app.getPort(), executeShellUtil);
+			stopApp(app.getName(), executeShellUtil);
 			sb.append("服务器:").append(deploy.getName()).append("<br>应用:").append(app.getName());
 			sendMsg("下发启动命令", MsgType.INFO);
-			executeShellUtil.execute(app.getStartScript());
+//			executeShellUtil.execute(app.getStartScript());
+			startApp(app.getName(), executeShellUtil);
 			sleep(3);
 			sendMsg("应用启动中，请耐心等待启动结果，或者稍后手动查看运行状态", MsgType.INFO);
 			int i  = 0;
 			boolean result = false;
 			// 由于启动应用需要时间，所以需要循环获取状态，如果超过30次，则认为是启动失败
 			while (i++ < count){
-				result = checkIsRunningStatus(app.getPort(), executeShellUtil);
+				result = checkIsRunningStatus(app.getName(), executeShellUtil);
 				if(result){
 					break;
 				}
@@ -319,9 +355,9 @@ public class DeployServiceImpl implements DeployService {
 			sb.append("服务器:").append(deploy.getName()).append("<br>应用:").append(app.getName());
 			sendMsg("下发停止命令", MsgType.INFO);
 			//停止应用
-			stopApp(app.getPort(), executeShellUtil);
+			stopApp(app.getName(), executeShellUtil);
 			sleep(1);
-			boolean result = checkIsRunningStatus(app.getPort(), executeShellUtil);
+			boolean result = checkIsRunningStatus(app.getName(), executeShellUtil);
 			if (result) {
 				sb.append("<br>关闭失败!");
 				sendMsg(sb.toString(), MsgType.ERROR);
@@ -361,7 +397,7 @@ public class DeployServiceImpl implements DeployService {
 		sendMsg(msg, MsgType.INFO);
 		sendMsg("停止原来应用", MsgType.INFO);
 		//停止应用
-		stopApp(app.getPort(), executeShellUtil);
+		stopApp(app.getName(), executeShellUtil);
 		//删除原来应用
 		sendMsg("删除应用", MsgType.INFO);
 		executeShellUtil.execute("rm -rf " + deployPath + FILE_SEPARATOR + resources.getAppName());
@@ -375,7 +411,7 @@ public class DeployServiceImpl implements DeployService {
 		boolean result = false;
 		// 由于启动应用需要时间，所以需要循环获取状态，如果超过30次，则认为是启动失败
 		while (i++ < count){
-			result = checkIsRunningStatus(app.getPort(), executeShellUtil);
+			result = checkIsRunningStatus(app.getName(), executeShellUtil);
 			if(result){
 				break;
 			}

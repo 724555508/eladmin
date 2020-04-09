@@ -1,5 +1,6 @@
 package me.zhengjie.modules.task.service.impl;
 
+import me.zhengjie.exception.BadRequestException;
 import me.zhengjie.modules.client.TaskClient;
 import me.zhengjie.modules.task.domain.Task;
 import me.zhengjie.utils.ValidationUtil;
@@ -136,21 +137,29 @@ public class TaskServiceImpl implements TaskService {
 
 	@Override
 	public void close(String id) {
-		taskClient.taskClose(id);		
+		if(!taskClient.taskClose(id)) {
+			throw new BadRequestException("下架任务失败");
+		}
 	}
 
 	@Override
 	public void open(String id) {
-		taskClient.taskOpen(id);	
+		if(!taskClient.taskOpen(id)) {
+			throw new BadRequestException("上架任务失败");
+		}
 	}
 
 	@Override
 	public void checkSuccess(String id) {
-		taskClient.checkSuccess(id);
+		if(!taskClient.checkSuccess(id)) {
+			throw new BadRequestException("操作失败");
+		}
 	}
 
 	@Override
 	public void checkFailure(String id) {
-		taskClient.checkFailure(id);
+		if(!taskClient.checkFailure(id)) {
+			throw new BadRequestException("操作失败");
+		}
 	}
 }

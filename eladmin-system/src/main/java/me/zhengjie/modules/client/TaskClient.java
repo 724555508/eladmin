@@ -15,15 +15,15 @@ public interface TaskClient {
 
 	
 	@PostMapping(value = "/taskClose")
-	public String taskClose(@RequestParam("id") String id);
+	public Boolean taskClose(@RequestParam("id") String id);
 	
 	@PostMapping(value = "/taskOpen")
-	public String taskOpen(@RequestParam("id") String id);
+	public Boolean taskOpen(@RequestParam("id") String id);
 	
 	@PostMapping(value = "/checkSuccess")
-	public String checkSuccess(@RequestParam("id") String id);
+	public Boolean checkSuccess(@RequestParam("id") String id);
 	
 	@PostMapping(value = "/checkFailure")
-	public String checkFailure(@RequestParam("id") String id);
+	public Boolean checkFailure(@RequestParam("id") String id);
 	
 }

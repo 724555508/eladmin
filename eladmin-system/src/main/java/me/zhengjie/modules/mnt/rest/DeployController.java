@@ -92,11 +92,11 @@ public class DeployController {
 		String fileName = "";
 		if(file != null){
 			fileName = file.getOriginalFilename();
-			File deployFile = new File(fileSavePath+fileName);
+			File deployFile = new File(fileSavePath + "/" + fileName);
 			FileUtil.del(deployFile);
 			file.transferTo(deployFile);
 			//文件下一步要根据文件名字来
-			deployService.deploy(fileSavePath+fileName ,id);
+			deployService.deploy(fileSavePath + "/" + fileName ,id);
 		}else{
 			System.out.println("没有找到相对应的文件");
 		}
